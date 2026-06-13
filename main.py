@@ -3,6 +3,8 @@ from datetime import date, datetime, timedelta
 import db, analytics, i18n, test_data
 import pandas as pd
 import numpy as np
+import traceback
+import sys
 
 METRIC_KEYS = [
     "coremetric_index", "readiness", "acwr", "monotony", "orthostatic_index",
@@ -585,7 +587,29 @@ class CoreMetricApp:
 
 
 def main(page: ft.Page):
-    CoreMetricApp(page)
+    try:
+        CoreMetricApp(page)
+    except Exception as e:
+        # Показываем ошибку на экране
+        page.add(
+            ft.Text("❌ Ошибка запуска приложения", size=20, color=ft.Colors.RED, weight=ft.FontWeight.BOLD),
+            ft.Divider(),
+            ft.Text(f"Ошибка: {str(e)}", size=14, color=ft.Colors.RED),
+            ft.Text(f"Тип: {type(e).__name__}", size=12, color=ft.Colors.GREY),
+            ft.Divider(),
+            ft.Text("Traceback:", size=12, weight=ft.FontWeight.BOLD),
+            ft.Text(traceback.format_exc(), size=10, color=ft.Colors.GREY),
+        )
+        page.update()
+
+        # Также логируем в файл
+        try:
+            import os
+            log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app_error.log")
+            with open(log_path, "w") as f:
+                f.write(traceback.format_exc())
+        except:
+            pass
 
 
 ft.app(target=main)
