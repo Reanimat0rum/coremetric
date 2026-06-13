@@ -4,26 +4,32 @@ import shutil
 from datetime import datetime
 
 
-# ✅ Упрощённый путь для Android
 def _get_app_dir():
-    """Возвращает папку для хранения данных приложения."""
-    # На Android Flet создаёт папку в /data/user/0/com.pavelk.coremetric/files/
-    # Но мы используем более надёжный способ — папку приложения
-    try:
-        # Пробуем стандартный путь Flet
-        import flet as ft
-        if hasattr(ft, 'FLET_APP_STORAGE_DATA'):
-            app_dir = ft.FLET_APP_STORAGE_DATA
-        else:
-            # Фолбэк: папка в домашней директории
-            home = os.path.expanduser("~")
-            app_dir = os.path.join(home, ".coremetric")
-    except:
-        # Если flet не импортируется (например, при тестировании)
-        app_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    """Возвращает writable папку для хранения данных приложения."""
+    # 1. Пробуем переменную окружения Flet (Android)
+    android_data = os.environ.get("FLET_APP_STORAGE_DATA")
+    if android_data and os.path.isdir(android_data):
+        return android_data
 
-    os.makedirs(app_dir, exist_ok=True)
-    return app_dir
+    # 2. Папка рядом с main.py (на Android это /data/user/0/com.flet.coremetric/files/flet/app/)
+    # Этот путь writable на Android
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if os.access(script_dir, os.W_OK):
+        return script_dir
+
+    # 3. HOME на Android (обычно writable)
+    home = os.environ.get("HOME") or os.path.expanduser("~")
+    if home and os.path.isdir(home) and os.access(home, os.W_OK):
+        app_dir = os.path.join(home, ".coremetric")
+        try:
+            os.makedirs(app_dir, exist_ok=True)
+            return app_dir
+        except:
+            pass
+
+    # 4. Фолбэк: временная папка (всегда writable)
+    import tempfile
+    return tempfile.gettempdir()
 
 
 APP_DIR = _get_app_dir()
@@ -33,6 +39,7 @@ BACKUP_DIR = os.path.join(APP_DIR, "backups")
 
 def init_db():
     try:
+        os.makedirs(APP_DIR, exist_ok=True)
         with sqlite3.connect(DB_PATH) as conn:
             conn.execute("""CREATE TABLE IF NOT EXISTS daily_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,12 +57,15 @@ def init_db():
             conn.execute("INSERT OR IGNORE INTO app_settings VALUES ('theme', 'light')")
             conn.execute("INSERT OR IGNORE INTO app_settings VALUES ('lang', 'ru')")
     except Exception as e:
-        # Логируем ошибку в файл
-        log_path = os.path.join(APP_DIR, "db_error.log")
-        with open(log_path, "w") as f:
-            f.write(f"Error initializing DB:\n{str(e)}\n")
-            f.write(f"DB_PATH: {DB_PATH}\n")
-            f.write(f"APP_DIR: {APP_DIR}\n")
+        # Логируем ошибку
+        try:
+            log_path = os.path.join(APP_DIR, "db_error.log")
+            with open(log_path, "w") as f:
+                f.write(f"Error: {str(e)}\n")
+                f.write(f"APP_DIR: {APP_DIR}\n")
+                f.write(f"DB_PATH: {DB_PATH}\n")
+        except:
+            pass
 
 
 def get_setting(key):
@@ -120,5 +130,4 @@ def export_csv():
     return path
 
 
-# Инициализируем БД при импорте
 init_db()
