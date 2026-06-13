@@ -1,0 +1,24 @@
+# Виртуальное окружение
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# БД и бэкапы (не коммитим)
+*.db
+backups/
+export.csv
+
+# Сборки
+build/
+dist/
+.metadata/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
