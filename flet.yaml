@@ -1,29 +1,18 @@
 product: CoreMetric
 app_name: CoreMetric
-org_name: PavelK
+org_name: com.pavelk.coremetric
 org_domain: coremetric.app
 
-# Метаданные приложения
 description: Мониторинг состояния спортсменов
 version: 1.0.0
 
-# Иконка (опционально, можно добавить позже)
-# icon: assets/icon.png
-
-# Настройки Android
 android:
-  min_sdk_version: 21  # Android 5.0+
+  min_sdk_version: 21
   target_sdk_version: 34
-  permissions:
-    - android.permission.WRITE_EXTERNAL_STORAGE
-    - android.permission.READ_EXTERNAL_STORAGE
 
-# Зависимости Python
 dependencies:
   - pandas==2.2.3
   - numpy==1.26.4
 
-# Файлы, которые нужно включить в APK
 include:
-  - "*.py"
-  - "*.db"
+  - "test_simple.py"
