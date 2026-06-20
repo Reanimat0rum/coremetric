@@ -41,9 +41,21 @@ jobs:
     - name: Build APK
       run: echo "y" | flet build apk --verbose
 
+    - name: Find and copy APK
+      run: |
+        APK_PATH=$(find . -name "app-release.apk" -type f | head -1)
+        echo "Found APK at: $APK_PATH"
+        if [ -z "$APK_PATH" ]; then
+          echo "ERROR: APK not found!"
+          find . -name "*.apk" -type f
+          exit 1
+        fi
+        mkdir -p output
+        cp "$APK_PATH" output/coremetric.apk
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: coremetric-apk
-        path: build/apk/app-release.apk
+        path: output/coremetric.apk
         retention-days: 30
