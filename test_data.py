@@ -181,3 +181,20 @@ def seed_database():
 
 if __name__ == "__main__":
     seed_database()
+'''
+def main(page: ft.Page):
+    CoreMetricApp(page)
+def main(page: ft.Page):
+    try:
+        CoreMetricApp(page)
+    except Exception as e:
+        page.add(
+            ft.Text("❌ Ошибка запуска приложения", size=20, color=ft.Colors.RED, weight=ft.FontWeight.BOLD),
+            ft.Divider(),
+            ft.Text(f"Ошибка: {str(e)}", size=14, color=ft.Colors.RED),
+            ft.Text(f"Тип: {type(e).__name__}", size=12, color=ft.Colors.GREY),
+            ft.Divider(),
+            ft.Text("Traceback:", size=12, weight=ft.FontWeight.BOLD),
+            ft.Text(traceback.format_exc(), size=10, color=ft.Colors.GREY),
+        )
+        page.update()'''

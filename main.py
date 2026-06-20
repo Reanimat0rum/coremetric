@@ -1,4 +1,5 @@
 import flet as ft
+import flet_charts as fch
 from datetime import date, datetime, timedelta
 import db, analytics, i18n, test_data
 import pandas as pd
@@ -86,7 +87,7 @@ class CoreMetricApp:
         self.fields = {}
         input_controls = [
             ft.Row([
-                ft.ElevatedButton("📅", on_click=lambda _: self.date_picker.pick_date(), width=60),
+                ft.Button(content=ft.Text("📅", size=20), on_click=lambda _: self.date_picker.pick_date(), width=60),
                 self.date_text,
             ], alignment=ft.MainAxisAlignment.START)
         ]
@@ -95,11 +96,10 @@ class CoreMetricApp:
             self.fields[db_key] = tf
             input_controls.append(tf)
         input_controls.append(
-            ft.ElevatedButton(self.t("btn_save"), icon=ft.Icons.SAVE, on_click=self.on_save, width=300)
+            ft.Button(content=ft.Text(self.t("btn_save")), icon=ft.Icons.SAVE, on_click=self.on_save, width=300)
         )
         self.tab_input = ft.Column(input_controls, scroll=ft.ScrollMode.AUTO, spacing=8)
 
-        # ✅ ИСПРАВЛЕНО: on_change устанавливается после создания
         self.period_dd = ft.Dropdown(
             options=[
                 ft.dropdown.Option("D", self.t("d")),
@@ -119,13 +119,14 @@ class CoreMetricApp:
         )
         self.metric_dd.on_change = self._on_period_or_metric_changed
 
-        self.chart = ft.LineChart(
+        self.chart = fch.LineChart(
             data_series=[], min_x=0, max_x=30, min_y=0, max_y=100,
-            horizontal_grid_lines=ft.ChartGridLines(width=1, color=ft.Colors.GREY_400),
-            vertical_grid_lines=ft.ChartGridLines(width=1, color=ft.Colors.GREY_300),
-            bottom_axis=ft.ChartAxis(labels=[]),
-            left_axis=ft.ChartAxis(labels_size=40),
+            horizontal_grid_lines=fch.ChartGridLines(width=1, color=ft.Colors.GREY_400),
+            vertical_grid_lines=fch.ChartGridLines(width=1, color=ft.Colors.GREY_300),
+            bottom_axis=fch.ChartAxis(labels=[]),
+            left_axis=fch.ChartAxis(label_size=40),
             width=500, height=350,
+            interactive=True,
         )
 
         self.index_text = ft.Text("--", size=36, weight=ft.FontWeight.BOLD, color=ft.Colors.GREY)
@@ -145,6 +146,7 @@ class CoreMetricApp:
             ft.IconButton(ft.Icons.FIT_SCREEN, on_click=self._zoom_reset, tooltip="Сбросить"),
         ], spacing=4)
 
+        # ✅ ИСПРАВЛЕНО: Создаём tab_dashboard как Column
         self.tab_dashboard = ft.Column([
             ft.Container(
                 content=ft.Column([
@@ -152,7 +154,7 @@ class CoreMetricApp:
                     self.index_text,
                     self.index_ref_text,
                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
-                padding=16, border=ft.border.all(2, ft.Colors.BLUE_GREY_200), border_radius=12,
+                padding=16, border=ft.Border.all(width=2, color=ft.Colors.BLUE_GREY_200), border_radius=12,
             ),
             ft.Row([self.ind_readiness, self.ind_acwr], spacing=8, wrap=True),
             ft.Row([self.ind_monotony, self.ind_ortho], spacing=8, wrap=True),
@@ -168,7 +170,6 @@ class CoreMetricApp:
             label=self.t("theme_dark"), value=(self.theme == "dark"), on_change=self.toggle_theme
         )
 
-        # ✅ ИСПРАВЛЕНО: on_change устанавливается после создания
         self.lang_dd = ft.Dropdown(
             options=[ft.dropdown.Option("ru", "Русский"), ft.dropdown.Option("en", "English")],
             value=self.lang,
@@ -187,12 +188,16 @@ class CoreMetricApp:
         self.tab_settings = ft.Column([
             self.theme_switch,
             ft.Row([ft.Text(self.t("lang")), self.lang_dd]),
-            ft.ElevatedButton("🧪 Создать тестовые данные", icon=ft.Icons.SCIENCE, on_click=self.do_seed_test_data),
-            ft.ElevatedButton(self.t("btn_clear"), color=ft.Colors.RED, on_click=self.clear_db),
+            ft.Button(content=ft.Text("🧪 Создать тестовые данные"), icon=ft.Icons.SCIENCE,
+                      on_click=self.do_seed_test_data),
+            ft.Button(content=ft.Text(self.t("btn_clear")), icon=ft.Icons.DELETE, on_click=self.clear_db,
+                      style=ft.ButtonStyle(color=ft.Colors.WHITE, bgcolor=ft.Colors.RED)),
         ], scroll=ft.ScrollMode.AUTO, spacing=8)
 
+        # ✅ ИСПРАВЛЕНО: Правильное использование Tabs
         self.tabs = ft.Tabs(
-            selected_index=0, animation_duration=300,
+            selected_index=0,
+            animation_duration=300,
             tabs=[
                 ft.Tab(text=self.t("tab_input"), content=self.tab_input),
                 ft.Tab(text=self.t("tab_dashboard"), content=self.tab_dashboard),
@@ -212,8 +217,9 @@ class CoreMetricApp:
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=2,
             ),
-            padding=ft.padding.symmetric(horizontal=12, vertical=8),
-            border=ft.border.all(1, ft.Colors.GREY_300), border_radius=8,
+            padding=(12, 8),
+            border=ft.Border.all(width=1, color=ft.Colors.GREY_300),
+            border_radius=8,
             width=180,
             data={"title": title_txt, "value": value_txt, "ref": ref_txt},
         )
@@ -375,7 +381,7 @@ class CoreMetricApp:
             if pd.notna(v):
                 rounded = round(float(v), 1)
                 tooltip_text = f"{idx}: {rounded}"
-                pts.append(ft.LineChartDataPoint(i, rounded, tooltip=tooltip_text))
+                pts.append(fch.LineChartDataPoint(i, rounded, tooltip=tooltip_text))
                 values.append(rounded)
 
         if not pts:
@@ -397,11 +403,16 @@ class CoreMetricApp:
         self.chart.max_x = max(30, len(pts))
 
         self.chart.data_series = [
-            ft.LineChartData(data_points=pts, stroke_width=3, color=ft.Colors.BLUE, curved=True)
+            fch.LineChartData(
+                points=pts,
+                stroke_width=3,
+                color=ft.Colors.BLUE,
+                curved=True
+            )
         ]
         step = max(1, len(agg_valid) // 10)
         self.chart.bottom_axis.labels = [
-            ft.ChartAxisLabel(value=i, label=ft.Text(row[0][5:], size=9, rotate=45))
+            fch.ChartAxisLabel(value=i, label=ft.Text(row[0][5:], size=9, rotate=45))
             for i, row in enumerate(agg_valid.iterrows()) if i % step == 0
         ]
         self.page.update()
@@ -457,7 +468,7 @@ class CoreMetricApp:
                         ft.Text(ref_text, size=10, color=ft.Colors.GREY_500, italic=True) if ref_text else ft.Container(
                             height=0),
                     ]),
-                    padding=12, border_radius=8, border=ft.border.all(1, border_color), bgcolor=bg,
+                    padding=12, border_radius=8, border=ft.Border.all(width=1, color=border_color), bgcolor=bg,
                 ))
         self.rec_list.controls = controls
         self.page.update()
@@ -595,4 +606,4 @@ def main(page: ft.Page):
         page.update()
 
 
-ft.app(target=main)
+ft.run(main)
