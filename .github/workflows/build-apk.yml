@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Set up Java 17
       uses: actions/setup-java@v5
@@ -24,18 +24,18 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Set up Flutter SDK
+    - name: Set up Flutter SDK (latest stable)
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.0'
         channel: 'stable'
         cache: true
 
-    - name: Install Flet CLI 0.25.2
+    - name: Install latest Flet CLI
       run: |
         python -m pip install --upgrade pip
-        pip install "flet-cli[all]==0.25.2"
+        pip install "flet-cli[all]"
         flet --version
+        flutter --version
 
     - name: Build APK
       run: flet build apk --verbose
