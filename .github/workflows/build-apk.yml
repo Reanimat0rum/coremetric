@@ -31,10 +31,10 @@ jobs:
         channel: 'stable'
         cache: true
 
-    - name: Install latest Flet CLI
+    - name: Install Flet CLI 0.25.2
       run: |
         python -m pip install --upgrade pip
-        pip install "flet-cli[all]"
+        pip install "flet-cli[all]==0.25.2"
         flet --version
 
     - name: Build APK
