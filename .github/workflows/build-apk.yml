@@ -24,9 +24,10 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Set up Flutter SDK (latest stable)
+    - name: Set up Flutter SDK 3.41.7
       uses: subosito/flutter-action@v2
       with:
+        flutter-version: '3.41.7'
         channel: 'stable'
         cache: true
 
@@ -38,7 +39,8 @@ jobs:
         flutter --version
 
     - name: Build APK
-      run: flet build apk --verbose
+      run: |
+        echo "y" | flet build apk --verbose
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
