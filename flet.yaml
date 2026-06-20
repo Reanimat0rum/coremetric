@@ -8,9 +8,10 @@ android:
   min_sdk: 21
   target_sdk: 34
   permissions:
-    - android.permission.INTERNET
-    - android.permission.ACCESS_NETWORK_STATE
     - android.permission.WRITE_EXTERNAL_STORAGE
     - android.permission.READ_EXTERNAL_STORAGE
+    - android.permission.INTERNET
 
-dependencies: []
+dependencies:
+  - pandas==2.2.3
+  - numpy==1.26.4
