@@ -10,9 +10,8 @@ android:
   min_sdk_version: 21
   target_sdk_version: 34
 
-dependencies:
-  - pandas==2.2.3
-  - numpy==1.26.4
+# ❌ Убрали pandas и numpy для теста
+dependencies: []
 
 include:
-  - "test_simple.py"
+  - "test_minimal.py"
