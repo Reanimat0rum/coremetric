@@ -99,6 +99,7 @@ class CoreMetricApp:
         )
         self.tab_input = ft.Column(input_controls, scroll=ft.ScrollMode.AUTO, spacing=8)
 
+        # ✅ ИСПРАВЛЕНО: on_change устанавливается после создания
         self.period_dd = ft.Dropdown(
             options=[
                 ft.dropdown.Option("D", self.t("d")),
@@ -106,12 +107,17 @@ class CoreMetricApp:
                 ft.dropdown.Option("ME", self.t("m")),
                 ft.dropdown.Option("YE", self.t("y")),
             ],
-            value="D", width=120, on_change=self._on_period_or_metric_changed,
+            value="D",
+            width=120,
         )
+        self.period_dd.on_change = self._on_period_or_metric_changed
+
         self.metric_dd = ft.Dropdown(
             options=[ft.dropdown.Option(k, self.t(f"metric_{k}")) for k in METRIC_KEYS],
-            value="coremetric_index", width=220, on_change=self._on_period_or_metric_changed,
+            value="coremetric_index",
+            width=220,
         )
+        self.metric_dd.on_change = self._on_period_or_metric_changed
 
         self.chart = ft.LineChart(
             data_series=[], min_x=0, max_x=30, min_y=0, max_y=100,
@@ -161,10 +167,15 @@ class CoreMetricApp:
         self.theme_switch = ft.Switch(
             label=self.t("theme_dark"), value=(self.theme == "dark"), on_change=self.toggle_theme
         )
+
+        # ✅ ИСПРАВЛЕНО: on_change устанавливается после создания
         self.lang_dd = ft.Dropdown(
             options=[ft.dropdown.Option("ru", "Русский"), ft.dropdown.Option("en", "English")],
-            value=self.lang, width=150, on_change=self.change_lang,
+            value=self.lang,
+            width=150,
         )
+        self.lang_dd.on_change = self.change_lang
+
         self.table_data = ft.DataTable(
             columns=[
                 ft.DataColumn(label=ft.Text("Date")),
